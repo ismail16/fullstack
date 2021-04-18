@@ -7,6 +7,14 @@
         <title>Fullstack</title>
 
         <link rel="stylesheet" href="/css/all.css">
+
+        <script>
+            (function (){
+                window.Laravel = {
+                    csrfToken: '{{ csrf_token() }}'
+                };
+            })();
+        </script>
     </head>
     <body>
         <div id="app">

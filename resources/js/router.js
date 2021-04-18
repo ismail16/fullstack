@@ -8,7 +8,8 @@ import hooks from './components/pages/basic/hooks.vue'
 
 //Project pages
 import home from './components/pages/home.vue'
-import tags from './components/pages/tags.vue'
+import tags from './admin/pages/tags.vue'
+import category from './admin/pages/category.vue'
 
 const routes = [
 
@@ -20,6 +21,11 @@ const routes = [
     {
         path: '/tags',
         component: tags
+    },
+
+    {
+        path: '/category',
+        component: category
     },
 
 

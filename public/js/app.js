@@ -2020,11 +2020,24 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 //
 //
 //
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
       data: {
-        tagName: ''
+        iconImage: '',
+        categoryName: ''
       },
       addModal: false,
       editModal: false,
@@ -2183,38 +2196,95 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       this.deleteItem = tag;
       this.deletingIndex = i;
       this.showDeleteModal = true;
+    },
+    handleSuccess: function handleSuccess(res, file) {
+      this.data.iconImage = res;
+    },
+    handleError: function handleError(res, file) {
+      this.$Notice.warning({
+        title: 'The file format is incorrect',
+        desc: "".concat(file.errors.file.length ? file.errors.file[0] : 'Something went wrong !')
+      });
+    },
+    handleFormatError: function handleFormatError(file) {
+      this.$Notice.warning({
+        title: 'The file format is incorrect',
+        desc: 'File format of ' + file.name + ' is incorrect, please select jpg or png.'
+      });
+    },
+    handleMaxSize: function handleMaxSize(file) {
+      this.$Notice.warning({
+        title: 'Exceeding file size limit',
+        desc: 'File  ' + file.name + ' is too large, no more than 2M.'
+      });
+    },
+    deleteImage: function deleteImage() {
+      var _this4 = this;
+
+      return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee4() {
+        var image, res;
+        return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee4$(_context4) {
+          while (1) {
+            switch (_context4.prev = _context4.next) {
+              case 0:
+                image = _this4.data.iconImage;
+                _this4.data.iconImage = '';
+
+                _this4.$refs.upload.clearFiles();
+
+                _context4.next = 5;
+                return _this4.callApi('post', 'app/delete_image', {
+                  imageName: image
+                });
+
+              case 5:
+                res = _context4.sent;
+
+                if (res.status != 200) {
+                  _this4.data.iconImage = image;
+
+                  _this4.swr();
+                }
+
+              case 7:
+              case "end":
+                return _context4.stop();
+            }
+          }
+        }, _callee4);
+      }))();
     }
   },
   created: function created() {
-    var _this4 = this;
+    var _this5 = this;
 
-    return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee4() {
+    return _asyncToGenerator( /*#__PURE__*/_babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.mark(function _callee5() {
       var res;
-      return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee4$(_context4) {
+      return _babel_runtime_regenerator__WEBPACK_IMPORTED_MODULE_0___default.a.wrap(function _callee5$(_context5) {
         while (1) {
-          switch (_context4.prev = _context4.next) {
+          switch (_context5.prev = _context5.next) {
             case 0:
-              _this4.token = window.Laravel.csrfToken;
-              _context4.next = 3;
-              return _this4.callApi('get', 'app/get_tags');
+              _this5.token = window.Laravel.csrfToken;
+              _context5.next = 3;
+              return _this5.callApi('get', 'app/get_tags');
 
             case 3:
-              res = _context4.sent;
+              res = _context5.sent;
               console.log('res');
               console.log(res);
 
               if (res.status == 200) {
-                _this4.tags = res.data;
+                _this5.tags = res.data;
               } else {
-                _this4.swr();
+                _this5.swr();
               }
 
             case 7:
             case "end":
-              return _context4.stop();
+              return _context5.stop();
           }
         }
-      }, _callee4);
+      }, _callee5);
     }))();
   }
 });
@@ -67666,10 +67736,19 @@ var render = function() {
                   _c(
                     "Upload",
                     {
+                      ref: "upload",
                       attrs: {
-                        multiple: "",
                         type: "drag",
-                        headers: { "x-csrf-token": _vm.token },
+                        headers: {
+                          "x-csrf-token": _vm.token,
+                          "X-Requested-With": "XMLHttpRequest"
+                        },
+                        "on-success": _vm.handleSuccess,
+                        "on-error": _vm.handleError,
+                        format: ["jpg", "jpeg", "png"],
+                        "max-size": 2048,
+                        "on-format-error": _vm.handleFormatError,
+                        "on-exceeded-size": _vm.handleMaxSize,
                         action: "/app/upload"
                       }
                     },
@@ -67690,7 +67769,30 @@ var render = function() {
                         1
                       )
                     ]
-                  )
+                  ),
+                  _vm._v(" "),
+                  _vm.data.iconImage
+                    ? _c("div", { staticClass: "demo-upload-list" }, [
+                        _c("img", {
+                          attrs: {
+                            src: "/upload/" + _vm.data.iconImage,
+                            alt: ""
+                          }
+                        }),
+                        _vm._v(" "),
+                        _c(
+                          "div",
+                          { staticClass: "demo-upload-list-cover" },
+                          [
+                            _c("Icon", {
+                              attrs: { type: "ios-trash-outline" },
+                              on: { click: _vm.deleteImage }
+                            })
+                          ],
+                          1
+                        )
+                      ])
+                    : _vm._e()
                 ],
                 1
               ),

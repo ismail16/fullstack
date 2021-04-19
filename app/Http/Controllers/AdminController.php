@@ -44,11 +44,31 @@ class AdminController extends Controller
         return Tag::where('id', $request->id)->delete();
     }
 
-    public function upload(Request $request){        
-        $picName = time().'.'.$request->file->extension();
+    public function upload(Request $request){  
+        
+        $this->validate($request, [
+            'file' => 'required|mimes:jpg,jpeg,png',
+        ]);
 
+        $picName = time().'.'.$request->file->extension();
         $request->file->move(public_path('upload'), $picName);
 
         return $picName;
+    }
+
+    public function deleteImage(Request $request){  
+        $fileName = $request->imageName;
+        $this->deleteFileFromServer($fileName);
+        return "Done";
+    }
+
+    public function deleteFileFromServer($fileName){  
+        
+        $filePath = public_path().'/upload/'.$fileName;
+        if(file_exists($filePath)){
+            @unlink($filePath);
+        }
+
+        return "Done";
     }
 }

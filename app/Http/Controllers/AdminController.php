@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Category;
 use Illuminate\Http\Request;
 
 use App\Tag;
@@ -68,7 +69,22 @@ class AdminController extends Controller
         if(file_exists($filePath)){
             @unlink($filePath);
         }
-
         return "Done";
+    }
+
+
+    public function addCategory(Request $request){        
+        $this->validate($request, [
+            'categoryName' => 'required',
+            'iconImage' => 'required'
+        ]);
+        return Category::create([
+            'categoryName' => $request->categoryName,
+            'iconImage' => $request->iconImage 
+        ]);
+    }
+
+    public function getCategory(){
+        return Category::orderby('id', 'desc')->get();
     }
 }

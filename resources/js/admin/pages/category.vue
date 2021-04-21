@@ -9,17 +9,21 @@
 						<table class="_table">
 							<tr>
 								<th>ID</th>
-								<th>Tag Name</th>
+								<th>Icon Image</th>
+								<th>Category Name</th>
 								<th>Created At</th>
 								<th>Action</th>
 							</tr>
-							<tr v-for="(tag, i) in tags" :key="i">
-								<td>{{ tag.id}}</td>
-								<td class="_table_name">{{ tag.tagName}}</td>
-								<td>{{ tag.created_at}}</td>
+							<tr v-for="(category, i) in categoryLists" :key="i">
+								<td>{{ category.id}}</td>
+								<td class="table_image">
+									<img :src="category.iconImage" alt="">
+								</td>
+								<td class="_table_name">{{ category.categoryName}}</td>
+								<td>{{ category.created_at}}</td>
 								<td>
-									<Button type="info" size="small" @click="showEditModal(tag, i)">Edit</Button>
-									<Button type="error" size="small" @click="showDeletingModal(tag, i)" :loading="tag.isDeleting">Delete</Button>
+									<Button type="info" size="small" @click="showEditModal(category, i)">Edit</Button>
+									<Button type="error" size="small" @click="showDeletingModal(category, i)" :loading="category.isDeleting">Delete</Button>
 								</td>
 							</tr>
 						</table>
@@ -29,11 +33,11 @@
 				<!-- add tag modal -->
 				<Modal
 					v-model="addModal"
-					title="Add Tag"
+					title="Add category"
 					:mask-closable = "false"
 					:closable = "false"
 					>
-					<Input v-model="data.tagName" placeholder="Add tag name"/>
+					<Input v-model="data.categoryName" placeholder="Add category name"/>
 
                     <div class="space">
                         <Upload
@@ -62,7 +66,7 @@
 
 					<div slot="footer">
 						<Button type="default" @click="addModal=false">Close</Button>
-						<Button type="primary" @click="addTag" :disabled="isAdding" :loading="isAdding">{{ isAdding ? 'Adding..' : "Add Tag" }}</Button>
+						<Button type="primary" @click="addCategory" :disabled="isAdding" :loading="isAdding">{{ isAdding ? 'Adding..' : "Add Category" }}</Button>
 					</div>
 				</Modal>
 
@@ -108,14 +112,14 @@ export default{
 	data(){
 		return {
 			data : {
-				iconImage: '',
-				categoryName:''
+				categoryName:'',
+				iconImage: ''
 			},
 
 			addModal: false,
 			editModal: false,
 			isAdding: false,
-			tags: [],
+			categoryLists: [],
 			editData : {
 				tagName: ''
 			},
@@ -130,24 +134,31 @@ export default{
 	},
 
 	methods  : {
-		async addTag(){
-			if(this.data.tagName.trim()=='') return this.e('Tag name is Required!')
-			const res = await this.callApi('post', 'app/create_tag', this.data );
+		async addCategory(){
+			if(this.data.categoryName.trim()=='') return this.e('Category name is Required!')
+			if(this.data.iconImage.trim()=='') return this.e('Icon Image is Required!')
+			this.data.iconImage = `/upload/${this.data.iconImage}`
+			const res = await this.callApi('post', 'app/create_category', this.data );
 			if(res.status==201 ){
-				this.tags.unshift(res.data)
-				this.s('Tag has been added Successfully!')
+				this.categoryLists.unshift(res.data)
+				this.s('Category has been added Successfully!')
 				this.addModal = false
-				this.data.tagName = ''
+				this.data.categoryName = ''
+				this.data.iconImage = ''
 			}else{
 				if(res.status==422){
-					if(res.data.errors.tagName){
-						this.i(res.data.errors.tagName[0])
+					if(res.data.errors.categoryName){
+						this.i(res.data.errors.categoryName[0])
+					}
+					if(res.data.errors.iconImage){
+						this.i(res.data.errors.iconImage[0])
 					}
 				}else{
 					this.swr()
 				}
 			}
 		},
+
 		async editTag(){
 			if(this.editData.tagName.trim()=='') return this.e('Tag name is Required!')
 			const res = await this.callApi('post', 'app/edit_tag', this.editData );
@@ -233,12 +244,11 @@ export default{
 
 	async created(){
         this.token = window.Laravel.csrfToken
-
-		const res = await this.callApi('get', 'app/get_tags')
+		const res = await this.callApi('get', 'app/get_category')
 		console.log('res')
 		console.log(res)
 		if(res.status==200 ){
-			this.tags = res.data
+			this.categoryLists = res.data
 		}else{
 			this.swr()
 		}

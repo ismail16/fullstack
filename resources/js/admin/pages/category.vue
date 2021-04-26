@@ -38,7 +38,6 @@
 					:closable = "false"
 					>
 					<Input v-model="data.categoryName" placeholder="Add category name"/>
-
                     <div class="space">
                         <Upload
                             ref="upload"
@@ -57,7 +56,7 @@
                             </div>
                         </Upload>
 						<div class="demo-upload-list" v-if="data.iconImage">
-							<img :src="`/upload/${data.iconImage}`" alt="">
+							<img :src="`${data.iconImage}`" alt="">
 							<div class="demo-upload-list-cover">
 								<Icon type="ios-trash-outline" @click="deleteImage"></Icon>
 							</div>
@@ -73,21 +72,45 @@
 				<!-- Edit tag modal -->
 				<Modal
 					v-model="editModal"
-					title="Add Tag"
+					title="Edit Category"
 					:mask-closable = "false"
 					:closable = "false"
 					>
-					<Input v-model="editData.tagName" placeholder="Edit tag name"/>
+					<Input v-model="editData.categoryName" placeholder="Category name"/>
+                    <div class="space">
+                        <Upload v-show="isIconImageNew"
+                            ref="editDataUpload"
+                            type="drag"
+                            :headers="{'x-csrf-token' : token, 'X-Requested-With' : 'XMLHttpRequest'}"
+							:on-success="handleSuccess"
+							:on-error="handleError"
+							:format="['jpg','jpeg','png']"
+							:max-size="2048"
+							:on-format-error="handleFormatError"
+							:on-exceeded-size="handleMaxSize"
+                            action="/app/upload">
+                            <div style="padding: 20px 0">
+                                <Icon type="ios-cloud-upload" size="52" style="color: #3399ff"></Icon>
+                                <p>Click or drag files here to upload</p>
+                            </div>
+                        </Upload>
+						<div class="demo-upload-list" v-if="editData.iconImage">
+							<img :src="`${editData.iconImage}`" alt="">
+							<div class="demo-upload-list-cover">
+								<Icon type="ios-trash-outline" @click="deleteImage(false)"></Icon>
+							</div>
+						</div>
+					</div>
 
 					<div slot="footer">
-						<Button type="default" @click="editModal=false">Close</Button>
-						<Button type="primary" @click="editTag" :disabled="isAdding" :loading="isAdding">{{ isAdding ? 'Editing..' : "Edit Tag" }}</Button>
+						<Button type="default" @click="closeEditModal">Close</Button>
+						<Button type="primary" @click="editCategory" :disabled="isAdding" :loading="isAdding">{{ isAdding ? 'Editing..' : "Edit Category" }}</Button>
 					</div>
 				</Modal>
 
 
 				<!-- Delete tag modal -->
-				<Modal v-model="showDeleteModal" width="360">
+				<!-- <Modal v-model="showDeleteModal" width="360">
 					<p slot="header" style="color:#f60;text-align:center">
 						<Icon type="ios-information-circle"></Icon>
 						<span>Delete confirmation</span>
@@ -98,7 +121,9 @@
 					<div slot="footer">
 						<Button type="error" size="large" long :loading="isDeleting" :disabled="isDeleting" @click="deleteTag">Delete</Button>
 					</div>
-				</Modal>
+				</Modal> -->
+				<deleteModal></deleteModal>
+				
 
 			</div>
 		</div>
@@ -107,6 +132,8 @@
 
 
 <script>
+import deleteModal from '../components/deleteModal.vue'
+import { mapGetters } from 'vuex'
 export default{
 
 	data(){
@@ -121,7 +148,8 @@ export default{
 			isAdding: false,
 			categoryLists: [],
 			editData : {
-				tagName: ''
+				categoryName:'',
+				iconImage: ''
 			},
 
 			index: -1,
@@ -129,7 +157,10 @@ export default{
 			isDeleting: false,
 			deleteItem: {},
 			deletingIndex: -1,
-            token: ''
+            token: '',
+			isIconImageNew: false,
+			isEditingItem: false
+
 		}
 	},
 
@@ -137,7 +168,7 @@ export default{
 		async addCategory(){
 			if(this.data.categoryName.trim()=='') return this.e('Category name is Required!')
 			if(this.data.iconImage.trim()=='') return this.e('Icon Image is Required!')
-			this.data.iconImage = `/upload/${this.data.iconImage}`
+			this.data.iconImage = `${this.data.iconImage}`
 			const res = await this.callApi('post', 'app/create_category', this.data );
 			if(res.status==201 ){
 				this.categoryLists.unshift(res.data)
@@ -159,17 +190,21 @@ export default{
 			}
 		},
 
-		async editTag(){
-			if(this.editData.tagName.trim()=='') return this.e('Tag name is Required!')
-			const res = await this.callApi('post', 'app/edit_tag', this.editData );
+		async editCategory(){
+			if(this.editData.categoryName.trim()=='') return this.e('Category name is Required!')
+			if(this.editData.iconImage.trim()=='') return this.e('Icon Image is Required!')
+			const res = await this.callApi('post', 'app/edit_category', this.editData );
 			if(res.status==200 ){
-				this.tags[this.index].tagName = this.editData.tagName
-				this.s('Tag has been edied Successfully!')
+				this.categoryLists[this.index].categoryName = this.editData.categoryName
+				this.s('Category has been edied Successfully!')
 				this.editModal = false
 			}else{
 				if(res.status==422){
-					if(res.data.errors.tagName){
-						this.i(res.data.errors.tagName[0])
+					if(res.data.errors.categoryName){
+						this.i(res.data.errors.categoryName[0])
+					}
+					if(res.data.errors.iconImage){
+						this.i(res.data.errors.iconImage[0])
 					}
 				}else{
 					this.swr()
@@ -177,36 +212,52 @@ export default{
 			}
 		},
 
-		showEditModal(tag, index){
-			let obj = {
-				id : tag.id,
-				tagName : tag.tagName
-			}
-			this.editData = obj,
-			this.editModal = true,
+		showEditModal(category, index){
+			// let obj = {
+			// 	id : category.id,
+			// 	tagName : category.tagName
+			// }
+			this.editData = category
+			this.editModal = true
 			this.index = index
+			this.isEditingItem = true
 		},
 
-		async deleteTag(){
-			this.isDeleting = true
-			const res = await this.callApi('post', 'app/delete_tag', this.deleteItem );
-			if(res.status==200 ){
-				this.tags.splice(this.deletingIndex, 1)
-				this.s('Tag has been deleted successfully')
-			}else{
-				this.swr()
-			}
-			this.isDeleting = false
-			this.showDeleteModal = false
-		},
+		// async deleteTag(){
+		// 	this.isDeleting = true
+		// 	const res = await this.callApi('post', 'app/delete_tag', this.deleteItem );
+		// 	if(res.status==200 ){
+		// 		this.tags.splice(this.deletingIndex, 1)
+		// 		this.s('Tag has been deleted successfully')
+		// 	}else{
+		// 		this.swr()
+		// 	}
+		// 	this.isDeleting = false
+		// 	this.showDeleteModal = false
+		// },
 
 		showDeletingModal(tag, i){
-			this.deleteItem = tag
-			this.deletingIndex = i
-			this.showDeleteModal = true
+
+			const deleteModalObj = {
+				showDeleteModal : true,
+				deleteUrl : 'app/delete_category',
+				data : tag,
+				deletingIndex: i,
+				isDeleted: false
+			}
+			this.$store.commit('setDeletingModalObj', deleteModalObj)
+			console.log('delete method called')
+
+			// this.deleteItem = tag
+			// this.deletingIndex = i
+			// this.showDeleteModal = true
 		},
 
 		handleSuccess (res, file) {
+			res = `/upload/${res}`
+			if(this.isEditingItem){
+				return this.editData.iconImage = res
+			}
 			this.data.iconImage = res
 		},
 		handleError (res, file) {
@@ -229,15 +280,30 @@ export default{
 			});
 		},
 
-		async deleteImage(){
-			let image = this.data.iconImage
-			this.data.iconImage = ''
-			this.$refs.upload.clearFiles()
+		async deleteImage(isAdd=true){
+			let image
+			if(!isAdd){
+				//editing
+				this.isIconImageNew = true
+				image = this.editData.iconImage
+				this.editData.iconImage = ''
+				this.$refs.editDataUpload.clearFiles()
+			}else{
+				image = this.data.iconImage
+				this.data.iconImage = ''
+				this.$refs.upload.clearFiles()
+			}
+			
 			const res = await this.callApi('post', 'app/delete_image', {imageName: image})
 			if(res.status!=200){
 				this.data.iconImage = image
 				this.swr()
 			}
+		},
+
+		closeEditModal(){
+			this.isEditingItem = false
+			this.editModal = false
 		}
 		 
 	},
@@ -251,6 +317,25 @@ export default{
 			this.categoryLists = res.data
 		}else{
 			this.swr()
+		}
+	},
+
+	components :{
+		deleteModal
+	},
+
+	
+	computed:{
+		...mapGetters(['getDeleteModalObj'])
+	},
+
+	watch : {
+		getDeleteModalObj(obj){
+			console.log(obj)
+			if(obj.isDeleted){
+				console.log(obj)
+				this.tags.splice(obj.deletingIndex, 1)
+			}
 		}
 	}
 }

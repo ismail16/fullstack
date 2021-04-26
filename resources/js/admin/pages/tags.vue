@@ -58,7 +58,7 @@
 
 
 				<!-- Delete tag modal -->
-				<Modal v-model="showDeleteModal" width="360">
+				<!-- <Modal v-model="showDeleteModal" width="360">
 					<p slot="header" style="color:#f60;text-align:center">
 						<Icon type="ios-information-circle"></Icon>
 						<span>Delete confirmation</span>
@@ -69,7 +69,8 @@
 					<div slot="footer">
 						<Button type="error" size="large" long :loading="isDeleting" :disabled="isDeleting" @click="deleteTag">Delete</Button>
 					</div>
-				</Modal>
+				</Modal> -->
+				<deleteModal></deleteModal>
 
 			</div>
 		</div>
@@ -78,6 +79,9 @@
 
 
 <script>
+import deleteModal from '../components/deleteModal.vue'
+import { mapGetters } from 'vuex'
+
 export default{
 
 	data(){
@@ -149,23 +153,33 @@ export default{
 			this.index = index
 		},
 
-		async deleteTag(){
-			this.isDeleting = true
-			const res = await this.callApi('post', 'app/delete_tag', this.deleteItem );
-			if(res.status==200 ){
-				this.tags.splice(this.deletingIndex, 1)
-				this.s('Tag has been deleted successfully')
-			}else{
-				this.swr()
-			}
-			this.isDeleting = false
-			this.showDeleteModal = false
-		},
+		// async deleteTag(){
+		// 	this.isDeleting = true
+		// 	const res = await this.callApi('post', 'app/delete_tag', this.deleteItem );
+		// 	if(res.status==200 ){
+		// 		this.tags.splice(this.deletingIndex, 1)
+		// 		this.s('Tag has been deleted successfully')
+		// 	}else{
+		// 		this.swr()
+		// 	}
+		// 	this.isDeleting = false
+		// 	this.showDeleteModal = false
+		// },
 
 		showDeletingModal(tag, i){
-			this.deleteItem = tag
-			this.deletingIndex = i
-			this.showDeleteModal = true
+			const deleteModalObj ={
+				showDeleteModal : true,
+				deleteUrl : 'app/delete_tag',
+				data : tag,
+				deletingIndex: i,
+				isDeleted: false
+			}
+			this.$store.commit('setDeletingModalObj', deleteModalObj)
+			console.log('delete method called')
+
+			// this.deleteItem = tag
+			// this.deletingIndex = i
+			// this.showDeleteModal = true
 		}
 		 
 	},
@@ -179,6 +193,24 @@ export default{
 			this.tags = res.data
 		}else{
 			this.swr()
+		}
+	},
+
+	components :{
+		deleteModal
+	},
+
+	computed:{
+		...mapGetters(['getDeleteModalObj'])
+	},
+
+	watch : {
+		getDeleteModalObj(obj){
+			console.log(obj)
+			if(obj.isDeleted){
+				console.log(obj)
+				this.tags.splice(obj.deletingIndex, 1)
+			}
 		}
 	}
 }

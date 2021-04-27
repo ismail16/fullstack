@@ -175,7 +175,6 @@ export default{
 				isDeleted: false
 			}
 			this.$store.commit('setDeletingModalObj', deleteModalObj)
-			console.log('delete method called')
 
 			// this.deleteItem = tag
 			// this.deletingIndex = i
@@ -186,9 +185,6 @@ export default{
 
 	async created(){
 		const res = await this.callApi('get', 'app/get_tags')
-
-		console.log('res')
-		console.log(res)
 		if(res.status==200 ){
 			this.tags = res.data
 		}else{
@@ -206,9 +202,7 @@ export default{
 
 	watch : {
 		getDeleteModalObj(obj){
-			console.log(obj)
 			if(obj.isDeleted){
-				console.log(obj)
 				this.tags.splice(obj.deletingIndex, 1)
 			}
 		}

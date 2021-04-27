@@ -1958,6 +1958,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 //
 //
 //
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
@@ -1992,7 +1993,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                   _this.$store.commit('setDeleteModal', false);
                 }
 
-                _this.isDeleing = false;
+                _this.isDeleting = false;
 
               case 6:
               case "end":
@@ -2001,6 +2002,9 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
           }
         }, _callee);
       }))();
+    },
+    closeModal: function closeModal() {
+      this.$store.commit('setDeleteModal', false);
     }
   },
   computed: _objectSpread({}, Object(vuex__WEBPACK_IMPORTED_MODULE_1__["mapGetters"])(['getDeleteModalObj']))
@@ -2033,23 +2037,6 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 //
 //
 //
@@ -2229,6 +2216,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 if (res.status == 201) {
                   _this.categoryLists.unshift(res.data);
 
+                  _this.$refs.upload.clearFiles();
+
                   _this.s('Category has been added Successfully!');
 
                   _this.addModal = false;
@@ -2325,30 +2314,15 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
       this.index = index;
       this.isEditingItem = true;
     },
-    // async deleteTag(){
-    // 	this.isDeleting = true
-    // 	const res = await this.callApi('post', 'app/delete_tag', this.deleteItem );
-    // 	if(res.status==200 ){
-    // 		this.tags.splice(this.deletingIndex, 1)
-    // 		this.s('Tag has been deleted successfully')
-    // 	}else{
-    // 		this.swr()
-    // 	}
-    // 	this.isDeleting = false
-    // 	this.showDeleteModal = false
-    // },
-    showDeletingModal: function showDeletingModal(tag, i) {
+    showDeletingModal: function showDeletingModal(category, i) {
       var deleteModalObj = {
         showDeleteModal: true,
         deleteUrl: 'app/delete_category',
-        data: tag,
+        data: category,
         deletingIndex: i,
         isDeleted: false
       };
       this.$store.commit('setDeletingModalObj', deleteModalObj);
-      console.log('delete method called'); // this.deleteItem = tag
-      // this.deletingIndex = i
-      // this.showDeleteModal = true
     },
     handleSuccess: function handleSuccess(res, file) {
       res = "/upload/".concat(res);
@@ -2445,8 +2419,6 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
             case 3:
               res = _context4.sent;
-              console.log('res');
-              console.log(res);
 
               if (res.status == 200) {
                 _this4.categoryLists = res.data;
@@ -2454,7 +2426,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 _this4.swr();
               }
 
-            case 7:
+            case 5:
             case "end":
               return _context4.stop();
           }
@@ -2468,11 +2440,8 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
   computed: _objectSpread({}, Object(vuex__WEBPACK_IMPORTED_MODULE_2__["mapGetters"])(['getDeleteModalObj'])),
   watch: {
     getDeleteModalObj: function getDeleteModalObj(obj) {
-      console.log(obj);
-
       if (obj.isDeleted) {
-        console.log(obj);
-        this.tags.splice(obj.deletingIndex, 1);
+        this.categoryLists.splice(obj.deletingIndex, 1);
       }
     }
   }
@@ -2730,8 +2699,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
         deletingIndex: i,
         isDeleted: false
       };
-      this.$store.commit('setDeletingModalObj', deleteModalObj);
-      console.log('delete method called'); // this.deleteItem = tag
+      this.$store.commit('setDeletingModalObj', deleteModalObj); // this.deleteItem = tag
       // this.deletingIndex = i
       // this.showDeleteModal = true
     }
@@ -2750,8 +2718,6 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
             case 2:
               res = _context3.sent;
-              console.log('res');
-              console.log(res);
 
               if (res.status == 200) {
                 _this3.tags = res.data;
@@ -2759,7 +2725,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 _this3.swr();
               }
 
-            case 6:
+            case 4:
             case "end":
               return _context3.stop();
           }
@@ -2773,10 +2739,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
   computed: _objectSpread({}, Object(vuex__WEBPACK_IMPORTED_MODULE_2__["mapGetters"])(['getDeleteModalObj'])),
   watch: {
     getDeleteModalObj: function getDeleteModalObj(obj) {
-      console.log(obj);
-
       if (obj.isDeleted) {
-        console.log(obj);
         this.tags.splice(obj.deletingIndex, 1);
       }
     }
@@ -67924,10 +67887,18 @@ var render = function() {
               _c(
                 "Button",
                 {
+                  attrs: { type: "default", size: "large" },
+                  on: { click: _vm.closeModal }
+                },
+                [_vm._v("Close")]
+              ),
+              _vm._v(" "),
+              _c(
+                "Button",
+                {
                   attrs: {
                     type: "error",
                     size: "large",
-                    long: "",
                     loading: _vm.isDeleting,
                     disabled: _vm.isDeleting
                   },
@@ -87011,15 +86982,14 @@ __webpack_require__.r(__webpack_exports__);
 /*!**************************************!*\
   !*** ./resources/js/vuex/usecom.vue ***!
   \**************************************/
-/*! no static exports found */
+/*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _usecom_vue_vue_type_template_id_a2ce05ee___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./usecom.vue?vue&type=template&id=a2ce05ee& */ "./resources/js/vuex/usecom.vue?vue&type=template&id=a2ce05ee&");
 /* harmony import */ var _usecom_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./usecom.vue?vue&type=script&lang=js& */ "./resources/js/vuex/usecom.vue?vue&type=script&lang=js&");
-/* harmony reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in _usecom_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__) if(["default"].indexOf(__WEBPACK_IMPORT_KEY__) < 0) (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return _usecom_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__[key]; }) }(__WEBPACK_IMPORT_KEY__));
-/* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+/* empty/unused harmony star reexport *//* harmony import */ var _node_modules_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../../node_modules/vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
 
 
 
@@ -87049,7 +87019,7 @@ component.options.__file = "resources/js/vuex/usecom.vue"
 /*!***************************************************************!*\
   !*** ./resources/js/vuex/usecom.vue?vue&type=script&lang=js& ***!
   \***************************************************************/
-/*! no static exports found */
+/*! exports provided: default */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";

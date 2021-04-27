@@ -107,24 +107,7 @@
 						<Button type="primary" @click="editCategory" :disabled="isAdding" :loading="isAdding">{{ isAdding ? 'Editing..' : "Edit Category" }}</Button>
 					</div>
 				</Modal>
-
-
-				<!-- Delete tag modal -->
-				<!-- <Modal v-model="showDeleteModal" width="360">
-					<p slot="header" style="color:#f60;text-align:center">
-						<Icon type="ios-information-circle"></Icon>
-						<span>Delete confirmation</span>
-					</p>
-					<div style="text-align:center">
-						<p>Are you sure you want to delete this tag ?</p>
-					</div>
-					<div slot="footer">
-						<Button type="error" size="large" long :loading="isDeleting" :disabled="isDeleting" @click="deleteTag">Delete</Button>
-					</div>
-				</Modal> -->
 				<deleteModal></deleteModal>
-				
-
 			</div>
 		</div>
     </div>
@@ -172,6 +155,7 @@ export default{
 			const res = await this.callApi('post', 'app/create_category', this.data );
 			if(res.status==201 ){
 				this.categoryLists.unshift(res.data)
+				this.$refs.upload.clearFiles()
 				this.s('Category has been added Successfully!')
 				this.addModal = false
 				this.data.categoryName = ''
@@ -223,34 +207,15 @@ export default{
 			this.isEditingItem = true
 		},
 
-		// async deleteTag(){
-		// 	this.isDeleting = true
-		// 	const res = await this.callApi('post', 'app/delete_tag', this.deleteItem );
-		// 	if(res.status==200 ){
-		// 		this.tags.splice(this.deletingIndex, 1)
-		// 		this.s('Tag has been deleted successfully')
-		// 	}else{
-		// 		this.swr()
-		// 	}
-		// 	this.isDeleting = false
-		// 	this.showDeleteModal = false
-		// },
-
-		showDeletingModal(tag, i){
-
+		showDeletingModal(category, i){
 			const deleteModalObj = {
 				showDeleteModal : true,
 				deleteUrl : 'app/delete_category',
-				data : tag,
+				data : category,
 				deletingIndex: i,
 				isDeleted: false
 			}
 			this.$store.commit('setDeletingModalObj', deleteModalObj)
-			console.log('delete method called')
-
-			// this.deleteItem = tag
-			// this.deletingIndex = i
-			// this.showDeleteModal = true
 		},
 
 		handleSuccess (res, file) {
@@ -311,8 +276,6 @@ export default{
 	async created(){
         this.token = window.Laravel.csrfToken
 		const res = await this.callApi('get', 'app/get_category')
-		console.log('res')
-		console.log(res)
 		if(res.status==200 ){
 			this.categoryLists = res.data
 		}else{
@@ -331,10 +294,8 @@ export default{
 
 	watch : {
 		getDeleteModalObj(obj){
-			console.log(obj)
 			if(obj.isDeleted){
-				console.log(obj)
-				this.tags.splice(obj.deletingIndex, 1)
+				this.categoryLists.splice(obj.deletingIndex, 1)
 			}
 		}
 	}

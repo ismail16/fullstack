@@ -6,6 +6,7 @@ use App\Category;
 use Illuminate\Http\Request;
 
 use App\Tag;
+use App\User;
 
 class AdminController extends Controller
 {
@@ -107,5 +108,49 @@ class AdminController extends Controller
             'id' => 'required'
         ]);
         return Category::where('id', $request->id)->delete();
+    }
+
+    public function createUser(Request $request){
+        $this->validate($request, [
+            'fullName' => 'required',
+            'email' => 'bail|required|email|unique:users',
+            'password' => 'bail|required|min:6',
+            'userType' => 'required'
+        ]);
+        $password = bcrypt( $request->password);
+
+        $user = User::create([
+            'fullName' => $request->fullName,
+            'email' => $request->email, 
+            'password' =>  $password, 
+            'userType' => $request->userType 
+        ]);
+
+        return $user;
+    } 
+    
+    public function editUser(Request $request){
+        $this->validate($request, [
+            'fullName' => 'required',
+            'email' => "bail|required|email|unique:users,email,$request->id",
+            'password' => 'min:6',
+            'userType' => 'required'
+        ]);
+        $data = [
+            'fullName' => $request->fullName,
+            'email' => $request->email, 
+            'userType' => $request->userType,
+        ];
+        if($request->password){
+            $password = bcrypt( $request->password);
+            $data['password'] = $password;
+        }
+        $user = User::where('id', $request->id)->update($data);
+        return $user;
+    }
+
+
+    public function getUsers(){
+        return User::where('userType', '!=', 'User')->orderby('id', 'desc')->get();
     }
 }

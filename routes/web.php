@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::view('/', 'welcome');
+
 
 Route::get('app/get_tags', 'AdminController@get_tags');
 Route::post('app/create_tag', 'AdminController@addTag');
@@ -29,10 +29,17 @@ Route::post('app/delete_category', 'AdminController@deleteCategory');
 Route::get('app/get_users', 'AdminController@getUsers');
 Route::post('app/create_user', 'AdminController@createUser');
 Route::post('app/edit_user', 'AdminController@editUser');
+Route::post('app/admin_login', 'AdminController@adminLogin');
+
+Route::get('/logout', 'AdminController@logout');
+Route::get('/', 'AdminController@index');
+Route::any('{slug}', 'AdminController@index')->where('slug', '([A-z\d-\/_.]+)?');
 
 
-Route::any('{slug}', function(){
-    return view('welcome');
-});
+// Route::any('{slug}', function(){
+//     return view('welcome');
+// });
+
+// Route::view('/', 'welcome');
 
 // Route::any('{slug}', 'AdminController@index')->where('slug', '([A-z\d-\/_.]+)?');

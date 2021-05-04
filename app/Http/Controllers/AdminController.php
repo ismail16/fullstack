@@ -7,9 +7,43 @@ use Illuminate\Http\Request;
 
 use App\Tag;
 use App\User;
+use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
 {
+
+    public function index(Request $request){
+
+        // first check if you are loggedin and admin user ...
+
+        if(!Auth::check() && $request->path() != 'login'){
+            return redirect('/login');
+        }
+
+        if(!Auth::check() && $request->path() == 'login'){
+            return view('welcome');
+        }
+
+        // you are already logged in... so check for if you are an admin user..
+        $user = Auth::user();
+        if ($user->userType == 'User') {
+            return redirect('/login');
+        }
+        if ($request->path() == 'login') {
+            return redirect('/');
+        }
+        return view('welcome');
+        
+    }
+
+
+    public function logout()
+    {
+        Auth::logout();
+        return redirect('/login');
+    }
+
+
     public function get_tags(){
 
         return Tag::orderby('id', 'desc')->get();
@@ -152,5 +186,30 @@ class AdminController extends Controller
 
     public function getUsers(){
         return User::where('userType', '!=', 'User')->orderby('id', 'desc')->get();
+    }
+
+    public function adminLogin(Request $request)
+    {
+        $this->validate($request, [
+            'email' => 'bail|required|email',
+            'password' => 'bail|required|min:6',
+        ]);
+        if(Auth::attempt(['email'=>$request->email, 'password'=>$request->password])){
+            $user = Auth::user();
+            if($user->userType == 'User'){
+                Auth::logout();
+                return response()->json([
+                    'msg' => 'Incorrect login details',
+                ], 401);
+            }
+            return response()->json([
+                'msg' => 'You are logged in',
+                'user' => $user
+            ]);
+        }else{
+            return response()->json([
+                'msg' => 'Incorrect login details',
+            ], 401);
+        }
     }
 }

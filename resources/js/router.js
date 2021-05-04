@@ -12,6 +12,7 @@ import usecom from './vuex/usecom.vue'
 import home from './components/pages/home.vue'
 import tags from './admin/pages/tags.vue'
 import category from './admin/pages/category.vue'
+import login from './admin/pages/login.vue'
 
 
 
@@ -37,6 +38,11 @@ const routes = [
     {
         path: '/adminusers',
         component: adminusers
+    },
+    
+    {
+        path: '/login',
+        component: login
     },
 
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AdminCheck;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,21 +16,25 @@ use Illuminate\Support\Facades\Route;
 
 
 
-Route::get('app/get_tags', 'AdminController@get_tags');
-Route::post('app/create_tag', 'AdminController@addTag');
-Route::post('app/edit_tag', 'AdminController@editTag');
-Route::post('app/delete_tag', 'AdminController@deleteTag');
+Route::prefix('app')->middleware([AdminCheck::class])->group(function(){
 
-Route::post('app/upload', 'AdminController@upload');
-Route::post('app/delete_image', 'AdminController@deleteImage');
-Route::post('app/create_category', 'AdminController@addCategory');
-Route::get('app/get_category', 'AdminController@getCategory');
-Route::post('app/edit_category', 'AdminController@editCategory');
-Route::post('app/delete_category', 'AdminController@deleteCategory');
-Route::get('app/get_users', 'AdminController@getUsers');
-Route::post('app/create_user', 'AdminController@createUser');
-Route::post('app/edit_user', 'AdminController@editUser');
-Route::post('app/admin_login', 'AdminController@adminLogin');
+    Route::get('/get_tags', 'AdminController@get_tags');
+    Route::post('/create_tag', 'AdminController@addTag');
+    Route::post('/edit_tag', 'AdminController@editTag');
+    Route::post('/delete_tag', 'AdminController@deleteTag');
+
+    Route::post('/upload', 'AdminController@upload');
+    Route::post('/delete_image', 'AdminController@deleteImage');
+    Route::post('/create_category', 'AdminController@addCategory');
+    Route::get('/get_category', 'AdminController@getCategory');
+    Route::post('/edit_category', 'AdminController@editCategory');
+    Route::post('/delete_category', 'AdminController@deleteCategory');
+    Route::get('/get_users', 'AdminController@getUsers');
+    Route::post('/create_user', 'AdminController@createUser');
+    Route::post('/edit_user', 'AdminController@editUser');
+    Route::post('/admin_login', 'AdminController@adminLogin');
+});
+
 
 Route::get('/logout', 'AdminController@logout');
 Route::get('/', 'AdminController@index');

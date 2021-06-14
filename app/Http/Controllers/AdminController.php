@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 
 use App\Tag;
 use App\User;
+use App\Role;
 use Illuminate\Support\Facades\Auth;
 
 class AdminController extends Controller
@@ -211,5 +212,38 @@ class AdminController extends Controller
                 'msg' => 'Incorrect login details',
             ], 401);
         }
+    }
+
+    public function addRole(Request $request){
+        $this->validate($request, [
+            'roleName' => 'required',
+        ]);
+
+        return Role::create([
+            'roleName' => $request->roleName
+        ]);
+    }
+    
+    public function getRoles(){
+        return Role::orderby('id', 'desc')->get();
+    }
+
+
+
+    public function editRole(Request $request){
+        $this->validate($request, [
+            'roleName' => 'required',
+        ]);
+
+        Role::where('id', $request->id)->update([
+            'roleName' => $request->roleName 
+        ]);
+    }
+    
+    public function deleteRole(Request $request){
+        $this->validate($request, [
+            'id' => 'required'
+        ]);
+        return Role::where('id', $request->id)->delete();
     }
 }

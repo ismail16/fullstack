@@ -29,10 +29,20 @@ Route::prefix('app')->middleware([AdminCheck::class])->group(function(){
     Route::get('/get_category', 'AdminController@getCategory');
     Route::post('/edit_category', 'AdminController@editCategory');
     Route::post('/delete_category', 'AdminController@deleteCategory');
+
     Route::get('/get_users', 'AdminController@getUsers');
     Route::post('/create_user', 'AdminController@createUser');
     Route::post('/edit_user', 'AdminController@editUser');
+
     Route::post('/admin_login', 'AdminController@adminLogin');
+
+    //role route
+    Route::post('/create_role', 'AdminController@addRole');
+    Route::get('/get_roles', 'AdminController@getRoles');
+    Route::post('/edit_role', 'AdminController@editRole');
+    Route::post('/delete_role', 'AdminController@deleteRole');
+
+    
 });
 
 

@@ -13,6 +13,7 @@ import home from './components/pages/home.vue'
 import tags from './admin/pages/tags.vue'
 import category from './admin/pages/category.vue'
 import login from './admin/pages/login.vue'
+import role from './admin/pages/role.vue'
 
 
 
@@ -43,6 +44,11 @@ const routes = [
     {
         path: '/login',
         component: login
+    },
+    
+    {
+        path: '/role',
+        component: role
     },
 
 

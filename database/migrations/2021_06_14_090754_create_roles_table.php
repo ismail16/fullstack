@@ -17,6 +17,7 @@ class CreateRolesTable extends Migration
             $table->id();
             $table->string('roleName');
             $table->string('permission')->nullable();
+            $table->tinyInteger('isAdmin')->nullable();
             $table->timestamps();
         });
     }
